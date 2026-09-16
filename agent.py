@@ -13,7 +13,7 @@ from typing import Any, Dict, List
 from support import (MODEL, SYSTEM_PROMPT, call_local, execute_tool, mcp_client,
                      new_session, record_tool_result,
                      runtime_preamble)
-from support.tools import seats_left, travel_readiness_check
+from support.tools import seats_left, travel_readiness_check, get_baggage_status
 
 MAX_TOOL_CALLS = 8  # Larkspur's own build capped the loop here; then a human takes over.
 
@@ -68,12 +68,26 @@ EXTRA_TOOLS: List[Dict[str, Any]] = [
             },
             "required": ["pnr"],
         },
+    },
+    {
+        "name": "get_baggage_status",
+        "description": (
+            "Check whether a checked bag is attached to the original or rebooked flight, "
+            "and whether the customer needs a baggage-service handoff. Use this when the "
+            "customer asks about a checked bag after a delay, cancellation, or rebooking."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"pnr": {"type": "string"}},
+            "required": ["pnr"],
+        },
     }
 ]
 # LOCAL_TOOLS: Dict[str, Any] = {}         # ✏️ Build 2, step 2.1: the functions behind them
 LOCAL_TOOLS: Dict[str, Any] = {
     "seats_left": seats_left,
     "travel_readiness_check": travel_readiness_check,
+    "get_baggage_status": get_baggage_status,
 }
 # next_available_day moved to the MCP server as of step 2.2: it is discovered
 # via mcp_client.tools() in tool_list() below, and dispatched via

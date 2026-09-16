@@ -26,6 +26,10 @@ is beside it, and it is what runs a tool you registered yourself.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from typing import Any, Dict
+
 from . import mock_backend as backend
 from .trace import record_tool_result
 import csv
@@ -172,6 +176,43 @@ def travel_readiness_check(pnr):
         "cancelled_segments": len(cancelled),
         "active_segments": len(active),
         "travel_ready": bool(active) and not cancelled,
+    }
+
+
+def get_baggage_status(pnr: str) -> Dict[str, Any]:
+    """Read the booking's checked-bag record and return the current baggage status."""
+    bookings_path = Path(__file__).resolve().parent.parent / "data" / "americas" / "bookings.json"
+    try:
+        with bookings_path.open("r", encoding="utf-8") as fh:
+            booking = json.load(fh)["bookings"].get(pnr)
+    except OSError:
+        return {"error": f"Could not read booking data for PNR {pnr}."}
+
+    if booking is None:
+        return {"error": f"No booking found for PNR {pnr}."}
+
+    bags = []
+    for ancillary in booking.get("ancillaries", []):
+        code = ancillary.get("code", "")
+        description = ancillary.get("description", "")
+        if "bag" in description.lower() or code.startswith("BAG"):
+            bags.append({"code": code, "description": description})
+
+    if not bags:
+        return {
+            "pnr": pnr,
+            "bags": [],
+            "status": "no_checked_bag_on_record",
+            "needs_human_handoff": False,
+            "note": "No checked-bag record is on file for this booking.",
+        }
+
+    return {
+        "pnr": pnr,
+        "bags": bags,
+        "status": "bag_recorded",
+        "needs_human_handoff": True,
+        "note": "Checked-bag tracing is handled by baggage service; this chat can explain the current record and hand off.",
     }
 
 

@@ -152,6 +152,29 @@ def seats_left(flight_no, date, cabin=None, party_size=None):
     }
 
 
+def travel_readiness_check(pnr):
+    """Is this booking still flyable as ticketed? Reads the booking, not a
+    hardcoded table: cancelled_by_airline on every segment means not ready."""
+    try:
+        booking = backend.get_booking_raw(pnr)
+    except backend.NotFound as e:
+        return {"error": str(e)}
+
+    segments = booking["segments"]
+    dead = {"cancelled_by_airline", "missed_connection", "diverted"}
+    cancelled = [s for s in segments if s["status"] in dead]
+    active = [s for s in segments if s["status"] in ("confirmed", "rebooked")]
+
+    return {
+        "pnr": booking["pnr"],
+        "passenger": segments and booking["passengers"][0]["last_name"] or None,
+        "seat_assigned": all(s.get("seat") for s in segments),
+        "cancelled_segments": len(cancelled),
+        "active_segments": len(active),
+        "travel_ready": bool(active) and not cancelled,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Writes
 # ---------------------------------------------------------------------------

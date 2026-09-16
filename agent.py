@@ -13,12 +13,47 @@ from typing import Any, Dict, List
 from support import (MODEL, SYSTEM_PROMPT, call_local, execute_tool, mcp_client,
                      new_session, record_tool_result,
                      runtime_preamble)
+from support.tools import seats_left
 
 MAX_TOOL_CALLS = 8  # Larkspur's own build capped the loop here; then a human takes over.
 
 TONE_ADDENDUM = ""                       # ✏️ Build 4, step 4.1, intelligence lane
-EXTRA_TOOLS: List[Dict[str, Any]] = []   # ✏️ Build 2, step 2.1: schemas for the tools you add
-LOCAL_TOOLS: Dict[str, Any] = {}         # ✏️ Build 2, step 2.1: the functions behind them
+# EXTRA_TOOLS: List[Dict[str, Any]] = []   # ✏️ Build 2, step 2.1: schemas for the tools you add
+EXTRA_TOOLS: List[Dict[str, Any]] = [
+    {
+        "name": "seats_left",
+        "description": (
+            "Check remaining seats on a specific flight and date. Use this after "
+            "search_alternatives has identified a candidate flight and you need to "
+            "verify capacity for the customer's party before recommending or holding "
+            "an option. It may also be used to answer direct customer questions about "
+            "availability on a specific flight. Requires flight_no and date. Returns "
+            "seats_left_Y and seats_left_J. If party_size is provided, also returns "
+            "whether the requested party can be accommodated in the requested cabin."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "flight_no": {"type": "string"},
+                "date": {
+                    "type": "string",
+                    "description": "YYYY-MM-DD"
+                },
+                "cabin": {
+                    "type": "string",
+                    "enum": ["Y", "J"]
+                },
+                "party_size": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+            },
+            "required": ["flight_no", "date"],
+        },
+    }
+]
+# LOCAL_TOOLS: Dict[str, Any] = {}         # ✏️ Build 2, step 2.1: the functions behind them
+LOCAL_TOOLS: Dict[str, Any] = {"seats_left": seats_left}
 # next_available_day moved to the MCP server as of step 2.2: it is discovered
 # via mcp_client.tools() in tool_list() below, and dispatched via
 # mcp_client.call_remote() in tool_results() above, keyed off mcp_client.tool_names.

@@ -28,6 +28,7 @@ from __future__ import annotations
 
 from . import mock_backend as backend
 from .trace import record_tool_result
+import csv
 
 SSR_INVENTORY_CODES = {"PETC", "MEDA", "OXYG", "STCR", "ESAN"}
 
@@ -116,6 +117,39 @@ def check_policy(pnr, cause_code, delay_minutes, status, wait_minutes_for_altern
         overnight=overnight, wait_minutes_for_alternative=wait_minutes_for_alternative,
         escalation_context=escalation_context,
     )
+
+def seats_left(flight_no, date, cabin=None, party_size=None):
+
+    with open("data/americas/flights.csv", newline="") as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            if row["flight_no"] == flight_no and row["date"] == date:
+
+                y = int(row["seats_left_Y"])
+                j = int(row["seats_left_J"])
+
+                result = {
+                    "flight_no": flight_no,
+                    "date": date,
+                    "seats_left_Y": y,
+                    "seats_left_J": j,
+                }
+
+                if party_size is not None:
+                    if cabin == "J":
+                        result["fits"] = j >= party_size
+                    elif cabin == "Y":
+                        result["fits"] = y >= party_size
+                    else:
+                        result["fits_Y"] = y >= party_size
+                        result["fits_J"] = j >= party_size
+
+                return result
+
+    return {
+        "error": f"No matching flight found for {flight_no} on {date}"
+    }
 
 
 # ---------------------------------------------------------------------------

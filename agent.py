@@ -87,31 +87,31 @@ EXTRA_TOOLS: List[Dict[str, Any]] = [
             "required": ["pnr"],
         },
     },
-    {
-        "name": "fare_rules",
-        "description": (
-            "Look up fare rules, refundability, change fees, cancellation rules, "
-            "and fare-family restrictions. Use when a customer asks why something "
-            "is allowed or not allowed under their fare."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "section": {
-                    "type": "string",
-                    "description": "Fare rule section name or number."
-                }
-            },
-            "required": ["section"]
-        },
-    }
+    # {
+    #     "name": "fare_rules",
+    #     "description": (
+    #         "Look up fare rules, refundability, change fees, cancellation rules, "
+    #         "and fare-family restrictions. Use when a customer asks why something "
+    #         "is allowed or not allowed under their fare."
+    #     ),
+    #     "input_schema": {
+    #         "type": "object",
+    #         "properties": {
+    #             "section": {
+    #                 "type": "string",
+    #                 "description": "Fare rule section name or number."
+    #             }
+    #         },
+    #         "required": ["section"]
+    #     },
+    # }
 ]
 # LOCAL_TOOLS: Dict[str, Any] = {}         # ✏️ Build 2, step 2.1: the functions behind them
 LOCAL_TOOLS: Dict[str, Any] = {
     "seats_left": seats_left,
     "travel_readiness_check": travel_readiness_check,
     "get_baggage_status": get_baggage_status,
-    "fare_rules": fare_rules,
+    # "fare_rules": fare_rules,
 }
 # next_available_day moved to the MCP server as of step 2.2: it is discovered
 # via mcp_client.tools() in tool_list() below, and dispatched via

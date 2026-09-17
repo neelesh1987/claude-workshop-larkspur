@@ -22,7 +22,17 @@ from support.tools import (
 
 MAX_TOOL_CALLS = 8  # Larkspur's own build capped the loop here; then a human takes over.
 
-TONE_ADDENDUM = ""                       # ✏️ Build 4, step 4.1, intelligence lane
+TONE_ADDENDUM = """
+If a customer mentions a lawyer, attorney, lawsuit, legal action,
+litigation, regulator complaint, court action, or threatens legal action:
+
+- Acknowledge the concern once.
+- Do not argue.
+- Do not provide a normal compensation, refund, or entitlement rundown.
+- Do not promise compensation.
+- Escalate the case to a human using escalate_to_human.
+- Explain that a specialist will review the matter.
+"""             # ✏️ Build 4, step 4.1, intelligence lane
 # EXTRA_TOOLS: List[Dict[str, Any]] = []   # ✏️ Build 2, step 2.1: schemas for the tools you add
 EXTRA_TOOLS: List[Dict[str, Any]] = [
     {

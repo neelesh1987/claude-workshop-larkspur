@@ -13,7 +13,12 @@ from typing import Any, Dict, List
 from support import (MODEL, SYSTEM_PROMPT, call_local, execute_tool, mcp_client,
                      new_session, record_tool_result,
                      runtime_preamble)
-from support.tools import seats_left, travel_readiness_check, get_baggage_status
+from support.tools import (
+    seats_left,
+    travel_readiness_check,
+    get_baggage_status,
+    fare_rules
+)
 
 MAX_TOOL_CALLS = 8  # Larkspur's own build capped the loop here; then a human takes over.
 
@@ -81,6 +86,24 @@ EXTRA_TOOLS: List[Dict[str, Any]] = [
             "properties": {"pnr": {"type": "string"}},
             "required": ["pnr"],
         },
+    },
+    {
+        "name": "fare_rules",
+        "description": (
+            "Look up fare rules, refundability, change fees, cancellation rules, "
+            "and fare-family restrictions. Use when a customer asks why something "
+            "is allowed or not allowed under their fare."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "section": {
+                    "type": "string",
+                    "description": "Fare rule section name or number."
+                }
+            },
+            "required": ["section"]
+        },
     }
 ]
 # LOCAL_TOOLS: Dict[str, Any] = {}         # ✏️ Build 2, step 2.1: the functions behind them
@@ -88,6 +111,7 @@ LOCAL_TOOLS: Dict[str, Any] = {
     "seats_left": seats_left,
     "travel_readiness_check": travel_readiness_check,
     "get_baggage_status": get_baggage_status,
+    "fare_rules": fare_rules,
 }
 # next_available_day moved to the MCP server as of step 2.2: it is discovered
 # via mcp_client.tools() in tool_list() below, and dispatched via

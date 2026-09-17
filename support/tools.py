@@ -216,6 +216,21 @@ def get_baggage_status(pnr: str) -> Dict[str, Any]:
     }
 
 
+def fare_rules(section: str):
+    rules = {
+        "fare families": "Basic fares are non-refundable. Flex fares may be changed without fees.",
+        "changes": "Changes may require payment of any fare difference.",
+        "refunds": "Eligibility depends on fare family and disruption status.",
+        "6": "Customer Commitment and fare rules section 6..."
+    }
+
+    key = section.strip().lower()
+    return {
+        "section": section,
+        "text": rules.get(key, f"No fare rule found for '{section}'.")
+    }
+
+
 # ---------------------------------------------------------------------------
 # Writes
 # ---------------------------------------------------------------------------

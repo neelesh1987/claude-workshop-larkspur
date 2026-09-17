@@ -17,7 +17,7 @@ from support.tools import (
     seats_left,
     travel_readiness_check,
     get_baggage_status,
-    fare_rules
+    # fare_rules
 )
 
 MAX_TOOL_CALLS = 8  # Larkspur's own build capped the loop here; then a human takes over.
